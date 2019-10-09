@@ -11,7 +11,11 @@ module.exports = {
   },
 
   async store(req, res) {
-    const { filename } = req.file;
+    const { originalname: name,
+      size,
+      key,
+      location: url=''
+    } = req.file;
     const { company, techs, price } = req.body;
     const { user_id } = req.headers;
 
@@ -22,14 +26,25 @@ module.exports = {
     }
 
     const spot = await Spot.create({
+      name,
+      key,
+      url,
+      size,
       user: user_id,
-      thumbnail: filename,
       company,
       techs: techs.split(',').map(tech => tech.trim()),
       price
     })
 
-    return res.json(spot)
+    return res.json(spot);
+  },
+
+  async delete (req, res) {
+    const spot = await Spot.findById(req.params.id);
+
+    await spot.remove();
+
+    return res.send();
   }
 
 }
